@@ -19,8 +19,14 @@ class Game:
         self.marioRight = pg.transform.scale(self.marioRight, (300, 300))
         self.mario = pg.transform.scale(self.mario, (300, 300))
 
+        self.set_time()
+        self.last_time = self.time
+
     def update(self):
-        self.mode7.update()
+        dt = self.time - self.last_time
+        self.last_time = self.time
+
+        self.mode7.update(dt)
         self.clock.tick()
         pg.display.set_caption(f'{self.clock.get_fps() : .1f}')
  
@@ -35,7 +41,7 @@ class Game:
             self.screen.blit(self.mario, (HALF_WIDTH-150, 650))
         pg.display.flip()
 
-    def get_time(self):
+    def set_time(self):
         self.time = pg.time.get_ticks() * 0.001
 
     def check_event(self):
@@ -47,7 +53,7 @@ class Game:
     def run(self):
         while True:
             self.check_event()
-            self.get_time()
+            self.set_time()
             self.update()
             self.draw()
 

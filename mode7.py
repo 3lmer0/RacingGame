@@ -2,6 +2,7 @@ import pygame as pg
 import numpy as np
 from settings import *
 from numba import njit, prange
+from math import *
 
 
 class Mode7:
@@ -17,14 +18,15 @@ class Mode7:
 
         self.screen_array = pg.surfarray.array3d(pg.Surface(WIN_RES))
 
-        self.alt = 1.0
-        self.angle = 0.0
         self.pos = np.array([0.0, 0.0])
+        self.alt = 1
+        self.angle = 0
         self.dy = 0 
         self.dx = 0
+        self.curr_speed = 0
 
-    def update(self):
-        self.movement()
+    def update(self, dt):
+        self.movement(dt)
         self.screen_array = self.render_frame(self.floor_array, self.ceil_array, self.screen_array, 
                                               self.tex_size, self.angle, self.pos, self.alt)
 
@@ -37,7 +39,7 @@ class Mode7:
     @njit(fastmath=True, parallel=True)
     def render_frame(floor_array, ceil_array, screen_array, tex_size, angle, player_pos, alt):
 
-        sin, cos = np.sin(angle), np.cos(angle)
+        sin, cos = np.sin(np.deg2rad(angle)), np.cos(np.deg2rad(angle))
 
         # iterating over the screen array
         for i in prange(WIDTH):
@@ -89,35 +91,35 @@ class Mode7:
 
         return screen_array
 
-    def movement(self):
-        sin_a = np.sin(self.angle)
-        cos_a = np.cos(self.angle)
-        speed_sin = SPEED * sin_a
-        speed_cos = SPEED * cos_a
-
+    def movement(self, dt):
         keys = pg.key.get_pressed()
-        if keys[pg.K_w]:
-            self.dx += speed_cos
-            self.dy += speed_sin
-        if keys[pg.K_s]:#Clean up this if statement
-            self.dx += -speed_cos
-            self.dy += -speed_sin
+        
+        # Car acceleration and braking
+        if keys[pg.K_w] and not self.curr_speed > MAX_SPEED:
+            self.curr_speed += ACCELERATION * dt
+        elif keys[pg.K_s]:
+            if self.curr_speed > 0:
+                self.curr_speed -= BRAKE * dt
+            else:
+                self.curr_speed = 0
+        else:
+            if self.curr_speed > 0:
+                self.curr_speed -= SPEED_LOSS * dt
+            else:
+                self.curr_speed = 0
+
+        # Car steering using Sigmoid function with contained angular velocity
         if keys[pg.K_a]:
-            self.dx += speed_sin
-            self.dy += -speed_cos
-            self.angle -= SPEED * 11
+            self.angle -= (MAX_STEERING * 2) / (1 + np.exp(-STEERING_SPEED * self.curr_speed)) - MAX_STEERING
         if keys[pg.K_d]:
-            self.dx += -speed_sin
-            self.dy += speed_cos
-            self.angle += SPEED * 11
+            self.angle += (MAX_STEERING * 2) / (1 + np.exp(-STEERING_SPEED * self.curr_speed)) - MAX_STEERING
 
-    
+        # Apply computations
+        sin_a = np.sin(np.deg2rad(self.angle))
+        cos_a = np.cos(np.deg2rad(self.angle))
 
-        self.pos[0] += self.dx
-        self.pos[1] += self.dy
+        speed_sin = self.curr_speed * dt * sin_a
+        speed_cos = self.curr_speed * dt * cos_a
 
-        if keys[pg.K_q]:
-            self.alt += SPEED
-        if keys[pg.K_e]:
-            self.alt -= SPEED
-        self.alt = min(max(self.alt, 0.3), 4.0)
+        self.pos[0] += speed_cos
+        self.pos[1] += speed_sin
