@@ -12,9 +12,9 @@ class Game:
 
         #TODO: WRITE BETTER CODE
         #This section in particular
-        self.mario = pg.image.load("marioBack.png")
-        self.marioLeft = pg.image.load("marioLeft.png")
-        self.marioRight = pg.image.load("marioRight.png")
+        self.mario = pg.image.load("textures/marioBack.png")
+        self.marioLeft = pg.image.load("textures/marioLeft.png")
+        self.marioRight = pg.image.load("textures/marioRight.png")
         self.marioLeft = pg.transform.scale(self.marioLeft, (300, 300))
         self.marioRight = pg.transform.scale(self.marioRight, (300, 300))
         self.mario = pg.transform.scale(self.mario, (300, 300))
@@ -28,17 +28,20 @@ class Game:
 
         self.mode7.update(dt)
         self.clock.tick()
+        
         pg.display.set_caption(f'{self.clock.get_fps() : .1f}')
  
     def draw(self):
         self.mode7.draw()
+
         key = pg.key.get_pressed()
-        if key[pg.K_d]:
-            self.screen.blit(self.marioRight, (HALF_WIDTH-150, 650))
-        if key[pg.K_a]:
-            self.screen.blit(self.marioLeft, (HALF_WIDTH-150, 650))
-        if not(key[pg.K_a] or key[pg.K_d]):
-            self.screen.blit(self.mario, (HALF_WIDTH-150, 650))
+        if key[pg.K_d] and not key[pg.K_a]:
+            self.screen.blit(self.marioRight, (HALF_WIDTH - 150, 650))
+        if key[pg.K_a] and not key[pg.K_d]:
+            self.screen.blit(self.marioLeft, (HALF_WIDTH - 150, 650))
+        if not (key[pg.K_a] or key[pg.K_d]) or (key[pg.K_a] and key[pg.K_d]):
+            self.screen.blit(self.mario, (HALF_WIDTH - 150, 650))
+
         pg.display.flip()
 
     def set_time(self):
