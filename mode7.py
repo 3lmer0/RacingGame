@@ -1,13 +1,15 @@
 import pygame as pg
 import numpy as np
+
 from settings import *
 from numba import njit, prange
+from collisions import CollisionRect
 
 
 class Mode7:
     def __init__(self, app):
         self.app = app
-        self.floor_tex = pg.image.load("textures/gameCourse.png").convert()
+        self.floor_tex = pg.image.load("textures/bowsaa2.png").convert()
         self.tex_size = self.floor_tex.get_size()
         self.floor_array = pg.surfarray.array3d(self.floor_tex)
 
@@ -17,15 +19,9 @@ class Mode7:
 
         self.screen_array = pg.surfarray.array3d(pg.Surface(WIN_RES))
 
-        self.pos = np.array([0.0, 0.0])
-        self.alt = 1
-        self.angle = 0
-        self.velocity = 0
-
-    def update(self, dt):
-        self.movement(dt)
+    def update(self, player):
         self.screen_array = self.render_frame(self.floor_array, self.ceil_array, self.screen_array, 
-                                              self.tex_size, self.angle, self.pos, self.alt)
+                                              self.tex_size, player.angle , player.pos, player.alt)
 
     def draw(self):
         pg.surfarray.blit_array(self.app.screen, self.screen_array)
@@ -86,38 +82,3 @@ class Mode7:
                 new_alt += alt
 
         return screen_array
-
-    def movement(self, dt):
-        keys = pg.key.get_pressed()
-        
-        # Car acceleration and braking
-        if keys[pg.K_w] and not self.velocity > MAX_SPEED:
-            self.velocity += ACCELERATION * dt
-        elif keys[pg.K_s]:
-            if self.velocity > 0:
-                self.velocity -= BRAKE * dt
-            else:
-                self.velocity = 0
-        else:
-            if self.velocity > 0:
-                self.velocity -= SPEED_LOSS * dt
-            else:
-                self.velocity = 0
-
-        # Car steering using Sigmoid function with contained angular velocity
-        new_angle = (MAX_STEERING * 2) / (1 + np.exp(-STEERING_SPEED * self.velocity)) - MAX_STEERING
-        
-        if keys[pg.K_a]:
-            self.angle -= new_angle
-        if keys[pg.K_d]:
-            self.angle += new_angle
-
-        # Apply computations
-        sin_a = np.sin(np.deg2rad(self.angle))
-        cos_a = np.cos(np.deg2rad(self.angle))
-
-        speed_sin = self.velocity * dt * sin_a
-        speed_cos = self.velocity * dt * cos_a
-
-        self.pos[0] += speed_cos
-        self.pos[1] += speed_sin
