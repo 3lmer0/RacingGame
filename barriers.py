@@ -2,7 +2,6 @@ from collisions import *
 import numpy as np
 
 class Barriers:
-
     def __init__(self):
         rects_data = [
             {"pos": np.array([49.95, -36.45]), "w": 47.6, "h": 5}, # h = height when viewed from ang = 0, w = width when viewed from ang = 0   

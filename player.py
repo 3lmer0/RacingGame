@@ -9,7 +9,6 @@ def lerp(a, b, t):
     return a + (b - a) * t
 
 class Player:
-
     def __init__(self):   
         #Initialize movement values
         self.pos = np.array([61.0, -73.01])
@@ -187,7 +186,7 @@ class Player:
         is_jumping_or_falling = self.is_jumping or self.is_falling
 
         # Player moves backwards
-        if keys[pg.K_w] and self.velocity <= MAX_SPEED and not is_jumping_or_falling:
+        if keys[pg.K_w] and self.velocity <= MAX_REVERSE_SPEED and not is_jumping_or_falling:
             self.velocity -= REVERSE_ACCELERATION * dt
         # Player brakes
         elif keys[pg.K_s] and not is_jumping_or_falling:

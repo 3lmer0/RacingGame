@@ -29,7 +29,7 @@ class Game:
         self.mode7.update(self.player)
         self.interface.update()
    
-        pg.display.set_caption(f"self.player.pos")
+        pg.display.set_caption(str(self.player.pos))
  
     def draw(self):
         self.mode7.draw()
