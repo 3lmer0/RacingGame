@@ -1,24 +1,23 @@
 import pygame as pg
 import numpy as np
 import sys, time
-
 from settings import *
 from mode7 import Mode7
 from player import Player
-
+from interface import Interface
 
 class Game:
     def __init__(self):
         self.screen = pg.display.set_mode(WIN_RES)
-        self.clock = pg.time.Clock()
         self.mode7 = Mode7(self)
         self.player = Player()
+        self.interface = Interface(self, self.player)
 
         #TODO: WRITE BETTER CODE
         #This section in particular
-        self.mario = pg.image.load("textures/marioBack.png")
-        self.marioLeft = pg.image.load("textures/marioLeft.png")
-        self.marioRight = pg.image.load("textures/marioRight.png")
+        self.mario = pg.image.load("assets/textures/marioBack.png")
+        self.marioLeft = pg.image.load("assets/textures/marioLeft.png")
+        self.marioRight = pg.image.load("assets/textures/marioRight.png")
         self.marioLeft = pg.transform.scale(self.marioLeft, (300, 300))
         self.marioRight = pg.transform.scale(self.marioRight, (300, 300))
         self.mario = pg.transform.scale(self.mario, (300, 300))
@@ -32,12 +31,13 @@ class Game:
 
         self.player.update(dt)
         self.mode7.update(self.player)
-        self.clock.tick()
-        
+        self.interface.update()
+
         pg.display.set_caption(str(self.player.pos))
  
     def draw(self):
         self.mode7.draw()
+        self.interface.draw()
 
         key = pg.key.get_pressed()
         if key[pg.K_d] and not key[pg.K_a]:
@@ -46,9 +46,14 @@ class Game:
             self.screen.blit(self.marioLeft, (HALF_WIDTH - 150, 650))
         if not (key[pg.K_a] or key[pg.K_d]) or (key[pg.K_a] and key[pg.K_d]):
             self.screen.blit(self.mario, (HALF_WIDTH - 150, 650))
-        if key[pg.K_b]:
-            self.player.set_player_pos(61.0, 29.35)
+        if key[pg.K_r]:
+            self.player.velocity = 0.0
+            self.player.set_player_pos(61.0, -73.01)
             self.player.set_player_angle(180.0)
+
+            self.interface.startTick = 0
+            self.interface.time = 0
+            self.interface.start = False
 
         pg.display.flip()
  

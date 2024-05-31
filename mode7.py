@@ -9,19 +9,26 @@ from collisions import CollisionRect
 class Mode7:
     def __init__(self, app):
         self.app = app
-        self.floor_tex = pg.image.load("textures/bowsaa2.png").convert()
+        self.floor_tex = pg.image.load("assets/textures/bowsaaFixed.png").convert()
         self.tex_size = self.floor_tex.get_size()
         self.floor_array = pg.surfarray.array3d(self.floor_tex)
 
-        self.ceil_tex = pg.image.load("textures/sky.png").convert()
+        self.ceil_tex = pg.image.load("assets/textures/wispy.png").convert()
         self.ceil_tex = pg.transform.scale(self.ceil_tex, self.tex_size)
         self.ceil_array = pg.surfarray.array3d(self.ceil_tex)
 
         self.screen_array = pg.surfarray.array3d(pg.Surface(WIN_RES))
+        
+        self.angle = 0
 
     def update(self, player):
-        self.screen_array = self.render_frame(self.floor_array, self.ceil_array, self.screen_array, 
-                                              self.tex_size, player.angle , player.pos, player.alt)
+        self.screen_array = self.render_frame(floor_array = self.floor_array,
+                                              ceil_array =  self.ceil_array,
+                                              screen_array = self.screen_array, 
+                                              tex_size = self.tex_size,
+                                              angle = player.angle,
+                                              player_pos  = player.pos,
+                                              alt = player.alt)
 
     def draw(self):
         pg.surfarray.blit_array(self.app.screen, self.screen_array)
@@ -64,7 +71,7 @@ class Mode7:
                 # shading
                 depth = 2 * abs(z) / HALF_HEIGHT
                 depth = min(max(2.5 * (abs(z) / HALF_HEIGHT), 0), 1)
-                fog = (1 - depth) * 230
+                fog = (1 - depth) * 125
 
                 floor_col = (floor_col[0] * depth + fog,
                              floor_col[1] * depth + fog,
@@ -82,3 +89,5 @@ class Mode7:
                 new_alt += alt
 
         return screen_array
+
+    
